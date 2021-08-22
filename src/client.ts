@@ -6,7 +6,7 @@ import { encode, distance, bearing } from './util';
 import * as fb from 'firebase/app';
 
 export interface FirePoint {
-  geopoint: fb.firestore.GeoPoint,
+  geopoint: fb.default.firestore.GeoPoint,
   geohash: string
 }
 
@@ -32,7 +32,7 @@ export class GeoFireClient {
       geopoint: new (this.app as any).firestore.GeoPoint(
         latitude,
         longitude
-      ) as fb.firestore.GeoPoint,
+      ) as fb.default.firestore.GeoPoint,
       geohash: encode(latitude, longitude, 9)
     }
   }
