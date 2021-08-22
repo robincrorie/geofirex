@@ -2,8 +2,12 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
 var rxjs = require('rxjs');
 var operators = require('rxjs/operators');
+var fb = require('firebase/app');
+var fb__default = _interopDefault(fb);
 
 /**
  * @module helpers
@@ -566,7 +570,7 @@ class GeoFireClient {
      */
     point(latitude, longitude) {
         return {
-            geopoint: new this.app.firestore.GeoPoint(latitude, longitude),
+            geopoint: new fb__default.firestore.GeoPoint(latitude, longitude),
             geohash: encode(latitude, longitude, 9)
         };
     }

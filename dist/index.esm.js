@@ -1,5 +1,6 @@
 import { Subject, Observable, combineLatest } from 'rxjs';
 import { map, takeUntil, shareReplay, finalize, first } from 'rxjs/operators';
+import fb__default from 'firebase/app';
 
 /**
  * @module helpers
@@ -562,7 +563,7 @@ class GeoFireClient {
      */
     point(latitude, longitude) {
         return {
-            geopoint: new this.app.firestore.GeoPoint(latitude, longitude),
+            geopoint: new fb__default.firestore.GeoPoint(latitude, longitude),
             geohash: encode(latitude, longitude, 9)
         };
     }

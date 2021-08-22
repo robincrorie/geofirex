@@ -29,10 +29,7 @@ export class GeoFireClient {
    */
   point(latitude: number, longitude: number): FirePoint {
     return {
-      geopoint: new (this.app as any).firestore.GeoPoint(
-        latitude,
-        longitude
-      ) as fb.default.firestore.GeoPoint,
+      geopoint: new fb.default.firestore.GeoPoint(latitude, longitude),
       geohash: encode(latitude, longitude, 9)
     }
   }
