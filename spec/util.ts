@@ -7,7 +7,7 @@ export const config = {
   messagingSenderId: '200126650097'
 };
 
-import * as firebase from 'firebase/app';
+import * as firebase from 'firebase/compat/app';
 
 export const mockResponse = [
   {
