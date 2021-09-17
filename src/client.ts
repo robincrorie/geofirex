@@ -1,13 +1,13 @@
-import { FirebaseSDK } from './interfaces';
+import { FirebaseSDK } from "./interfaces";
 
-import { GeoFireQuery } from './query';
-import { encode, distance, bearing } from './util';
+import { GeoFireQuery } from "./query";
+import { encode, distance, bearing } from "./util";
 
-import * as fb from 'firebase/compat/app';
+import firebase from "firebase/compat/app";
 
 export interface FirePoint {
-  geopoint: fb.default.firestore.GeoPoint,
-  geohash: string
+  geopoint: firebase.firestore.GeoPoint;
+  geohash: string;
 }
 
 export class GeoFireClient {
@@ -22,16 +22,16 @@ export class GeoFireClient {
   }
 
   /**
-   * Creates an object with a geohash. Save it to a field in Firestore to make geoqueries. 
+   * Creates an object with a geohash. Save it to a field in Firestore to make geoqueries.
    * @param  {number} latitude
    * @param  {number} longitude
    * @returns FirePoint
    */
   point(latitude: number, longitude: number): FirePoint {
     return {
-      geopoint: new fb.default.firestore.GeoPoint(latitude, longitude),
-      geohash: encode(latitude, longitude, 9)
-    }
+      geopoint: new firebase.firestore.GeoPoint(latitude, longitude),
+      geohash: encode(latitude, longitude, 9),
+    };
   }
   /**
    * Haversine distance between points
@@ -40,11 +40,11 @@ export class GeoFireClient {
    * @returns number
    */
   distance(from: FirePoint, to: FirePoint): number {
-      return distance(
-        [from.geopoint.latitude, from.geopoint.longitude],
-        [to.geopoint.latitude, to.geopoint.longitude]
-      )
-    }
+    return distance(
+      [from.geopoint.latitude, from.geopoint.longitude],
+      [to.geopoint.latitude, to.geopoint.longitude]
+    );
+  }
 
   /**
    * Haversine bearing between points
@@ -53,12 +53,12 @@ export class GeoFireClient {
    * @returns number
    */
   bearing(from: FirePoint, to: FirePoint): number {
-      return bearing(
-        [from.geopoint.latitude, from.geopoint.longitude],
-        [to.geopoint.latitude, to.geopoint.longitude]
-      )
-    }
+    return bearing(
+      [from.geopoint.latitude, from.geopoint.longitude],
+      [to.geopoint.latitude, to.geopoint.longitude]
+    );
   }
+}
 /**
  * Initialize the library by passing it your Firebase app
  * @param  {firestore.FirebaseApp} app

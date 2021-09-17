@@ -1,6 +1,7 @@
+import 'firebase/compat/firestore';
 import { Subject, Observable, combineLatest } from 'rxjs';
 import { map, takeUntil, shareReplay, finalize, first } from 'rxjs/operators';
-import fb__default from 'firebase/compat/app';
+import firebase from 'firebase/compat/app';
 
 /**
  * @module helpers
@@ -429,13 +430,13 @@ const neighbors = function (hash_string) {
 };
 
 // import { firestore } from './interfaces';
-const defaultOpts = { units: 'km', log: false };
+const defaultOpts = { units: "km", log: false };
 class GeoFireQuery {
     constructor(app, ref) {
         this.app = app;
         this.ref = ref;
-        if (typeof ref === 'string') {
-            this.ref = this.app.default.firestore().collection(ref);
+        if (typeof ref === "string") {
+            this.ref = this.app.firestore().collection(ref);
         }
     }
     // GEO QUERIES
@@ -458,23 +459,23 @@ class GeoFireQuery {
         // Used to cancel the individual geohash subscriptions
         const complete = new Subject();
         // Map geohash neighbors to individual queries
-        const queries = area.map(hash => {
+        const queries = area.map((hash) => {
             const query = this.queryPoint(hash, field);
             return createStream(query).pipe(snapToData(), takeUntil(complete));
         });
         // Combine all queries concurrently
-        const combo = combineLatest(...queries).pipe(map(arr => {
+        const combo = combineLatest(...queries).pipe(map((arr) => {
             // Combine results into a single array
             const reduced = arr.reduce((acc, cur) => acc.concat(cur));
             // Filter by radius
-            const filtered = reduced.filter(val => {
+            const filtered = reduced.filter((val) => {
                 const { latitude, longitude } = val[field].geopoint;
                 return (distance$1([centerLat, centerLng], [latitude, longitude]) <=
                     radiusBuffer);
             });
             // Optional logging
             if (opts.log) {
-                console.group('GeoFireX Query');
+                console.group("GeoFireX Query");
                 console.log(`🌐 Center ${[centerLat, centerLng]}. Radius ${radius}`);
                 console.log(`📍 Hits: ${reduced.length}`);
                 console.log(`⌚ Elapsed time: ${Date.now() - tick}ms`);
@@ -483,31 +484,31 @@ class GeoFireQuery {
             }
             // Map and sort to final output
             return filtered
-                .map(val => {
+                .map((val) => {
                 const { latitude, longitude } = val[field].geopoint;
                 const hitMetadata = {
                     distance: distance$1([centerLat, centerLng], [latitude, longitude]),
-                    bearing: bearing$1([centerLat, centerLng], [latitude, longitude])
+                    bearing: bearing$1([centerLat, centerLng], [latitude, longitude]),
                 };
                 return Object.assign(Object.assign({}, val), { hitMetadata });
             })
                 .sort((a, b) => a.hitMetadata.distance - b.hitMetadata.distance);
         }), shareReplay(1), finalize(() => {
-            opts.log && console.log('✋ Query complete');
+            opts.log && console.log("✋ Query complete");
             complete.next(true);
         }));
         return combo;
     }
     queryPoint(geohash, field) {
-        const end = geohash + '~';
+        const end = geohash + "~";
         return this.ref
             .orderBy(`${field}.geohash`)
             .startAt(geohash)
             .endAt(end);
     }
 }
-function snapToData(id = 'id') {
-    return map((querySnapshot) => querySnapshot.docs.map(v => {
+function snapToData(id = "id") {
+    return map((querySnapshot) => querySnapshot.docs.map((v) => {
         return Object.assign(Object.assign({}, (id ? { [id]: v.id } : null)), v.data());
     }));
 }
@@ -515,8 +516,8 @@ function snapToData(id = 'id') {
 internal, do not use. Converts callback to Observable.
  */
 function createStream(input) {
-    return new Observable(observer => {
-        const unsubscribe = input.onSnapshot(val => observer.next(val), err => observer.error(err));
+    return new Observable((observer) => {
+        const unsubscribe = input.onSnapshot((val) => observer.next(val), (err) => observer.error(err));
         return { unsubscribe };
     });
 }
@@ -528,8 +529,8 @@ function createStream(input) {
 function toGeoJSON(field, includeProps = false) {
     return map((data) => {
         return {
-            type: 'FeatureCollection',
-            features: data.map(v => toGeoJSONFeature([v[field].geopoint.latitude, v[field].geopoint.longitude], includeProps ? Object.assign({}, v) : {}))
+            type: "FeatureCollection",
+            features: data.map((v) => toGeoJSONFeature([v[field].geopoint.latitude, v[field].geopoint.longitude], includeProps ? Object.assign({}, v) : {})),
         };
     });
 }
@@ -563,8 +564,8 @@ class GeoFireClient {
      */
     point(latitude, longitude) {
         return {
-            geopoint: new fb__default.firestore.GeoPoint(latitude, longitude),
-            geohash: encode(latitude, longitude, 9)
+            geopoint: new firebase.firestore.GeoPoint(latitude, longitude),
+            geohash: encode(latitude, longitude, 9),
         };
     }
     /**

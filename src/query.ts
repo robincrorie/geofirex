@@ -1,30 +1,31 @@
 // import { firestore } from './interfaces';
 
-import { Observable, combineLatest, Subject } from 'rxjs';
+import { Observable, combineLatest, Subject } from "rxjs";
+import { shareReplay, map, first, finalize, takeUntil } from "rxjs/operators";
+
+import { FeatureCollection, Geometry } from "./interfaces";
 import {
-  shareReplay,
-  map,
-  first,
-  finalize,
-  takeUntil,
-} from 'rxjs/operators';
+  neighbors,
+  toGeoJSONFeature,
+  distance,
+  bearing,
+  setPrecision,
+} from "./util";
 
-import { FeatureCollection, Geometry } from './interfaces';
-import { neighbors, toGeoJSONFeature, distance, bearing, setPrecision } from './util';
-
-import * as fb from 'firebase/compat/app';
-import { FirebaseSDK } from './interfaces';
-import { FirePoint } from './client';
+import firebase from "firebase/compat/app";
+import "firebase/compat/firestore";
+import { FirebaseSDK } from "./interfaces";
+import { FirePoint } from "./client";
 
 export type QueryFn = (
-  ref: fb.default.firestore.CollectionReference
-) => fb.default.firestore.Query;
+  ref: firebase.firestore.CollectionReference
+) => firebase.firestore.Query;
 
 export interface GeoQueryOptions {
-  units?: 'km';
+  units?: "km";
   log?: boolean;
 }
-const defaultOpts: GeoQueryOptions = { units: 'km', log: false };
+const defaultOpts: GeoQueryOptions = { units: "km", log: false };
 
 export interface HitMetadata {
   bearing: number;
@@ -38,10 +39,13 @@ export interface GeoQueryDocument {
 export class GeoFireQuery<T = any> {
   constructor(
     private app: FirebaseSDK,
-    private ref?: fb.default.firestore.CollectionReference | fb.default.firestore.Query | string
+    private ref?:
+      | firebase.firestore.CollectionReference
+      | firebase.firestore.Query
+      | string
   ) {
-    if (typeof ref === 'string') {
-      this.ref = this.app.default.firestore().collection(ref);
+    if (typeof ref === "string") {
+      this.ref = this.app.firestore().collection(ref);
     }
   }
   // GEO QUERIES
@@ -72,22 +76,19 @@ export class GeoFireQuery<T = any> {
     const complete = new Subject();
 
     // Map geohash neighbors to individual queries
-    const queries = area.map(hash => {
+    const queries = area.map((hash) => {
       const query = this.queryPoint(hash, field);
-      return createStream(query).pipe(
-        snapToData(),
-        takeUntil(complete)
-      );
+      return createStream(query).pipe(snapToData(), takeUntil(complete));
     });
 
     // Combine all queries concurrently
     const combo = combineLatest(...queries).pipe(
-      map(arr => {
+      map((arr) => {
         // Combine results into a single array
         const reduced = arr.reduce((acc, cur) => acc.concat(cur));
 
         // Filter by radius
-        const filtered = reduced.filter(val => {
+        const filtered = reduced.filter((val) => {
           const { latitude, longitude } = val[field].geopoint;
 
           return (
@@ -98,7 +99,7 @@ export class GeoFireQuery<T = any> {
 
         // Optional logging
         if (opts.log) {
-          console.group('GeoFireX Query');
+          console.group("GeoFireX Query");
           console.log(`🌐 Center ${[centerLat, centerLng]}. Radius ${radius}`);
           console.log(`📍 Hits: ${reduced.length}`);
           console.log(`⌚ Elapsed time: ${Date.now() - tick}ms`);
@@ -108,21 +109,21 @@ export class GeoFireQuery<T = any> {
 
         // Map and sort to final output
         return filtered
-          .map(val => {
+          .map((val) => {
             const { latitude, longitude } = val[field].geopoint;
 
             const hitMetadata = {
               distance: distance([centerLat, centerLng], [latitude, longitude]),
-              bearing: bearing([centerLat, centerLng], [latitude, longitude])
+              bearing: bearing([centerLat, centerLng], [latitude, longitude]),
             };
-            return { ...val, hitMetadata } as (GeoQueryDocument & T);
+            return { ...val, hitMetadata } as GeoQueryDocument & T;
           })
 
           .sort((a, b) => a.hitMetadata.distance - b.hitMetadata.distance);
       }),
       shareReplay(1),
       finalize(() => {
-        opts.log && console.log('✋ Query complete');
+        opts.log && console.log("✋ Query complete");
         complete.next(true);
       })
     );
@@ -131,8 +132,8 @@ export class GeoFireQuery<T = any> {
   }
 
   private queryPoint(geohash: string, field: string) {
-    const end = geohash + '~';
-    return (this.ref as fb.default.firestore.CollectionReference)
+    const end = geohash + "~";
+    return (this.ref as firebase.firestore.CollectionReference)
       .orderBy(`${field}.geohash`)
       .startAt(geohash)
       .endAt(end);
@@ -152,12 +153,12 @@ export class GeoFireQuery<T = any> {
   // }
 }
 
-function snapToData(id = 'id') {
-  return map((querySnapshot: fb.default.firestore.QuerySnapshot) =>
-    querySnapshot.docs.map(v => {
+function snapToData(id = "id") {
+  return map((querySnapshot: firebase.firestore.QuerySnapshot) =>
+    querySnapshot.docs.map((v) => {
       return {
         ...(id ? { [id]: v.id } : null),
-        ...v.data()
+        ...v.data(),
       };
     })
   );
@@ -167,10 +168,10 @@ function snapToData(id = 'id') {
 internal, do not use. Converts callback to Observable. 
  */
 function createStream(input): Observable<any> {
-  return new Observable(observer => {
+  return new Observable((observer) => {
     const unsubscribe = input.onSnapshot(
-      val => observer.next(val),
-      err => observer.error(err)
+      (val) => observer.next(val),
+      (err) => observer.error(err)
     );
     return { unsubscribe };
   });
@@ -183,13 +184,13 @@ function createStream(input): Observable<any> {
 export function toGeoJSON(field: string, includeProps: boolean = false) {
   return map((data: any[]) => {
     return {
-      type: 'FeatureCollection',
-      features: data.map(v =>
+      type: "FeatureCollection",
+      features: data.map((v) =>
         toGeoJSONFeature(
           [v[field].geopoint.latitude, v[field].geopoint.longitude],
           includeProps ? { ...v } : {}
         )
-      )
+      ),
     } as FeatureCollection<Geometry>;
   }) as any;
 }

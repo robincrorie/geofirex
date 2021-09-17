@@ -1,10 +1,11 @@
-import { Observable } from 'rxjs';
-import * as fb from 'firebase/compat/app';
-import { FirebaseSDK } from './interfaces';
-import { FirePoint } from './client';
-export declare type QueryFn = (ref: fb.default.firestore.CollectionReference) => fb.default.firestore.Query;
+import { Observable } from "rxjs";
+import firebase from "firebase/compat/app";
+import "firebase/compat/firestore";
+import { FirebaseSDK } from "./interfaces";
+import { FirePoint } from "./client";
+export declare type QueryFn = (ref: firebase.firestore.CollectionReference) => firebase.firestore.Query;
 export interface GeoQueryOptions {
-    units?: 'km';
+    units?: "km";
     log?: boolean;
 }
 export interface HitMetadata {
@@ -17,7 +18,7 @@ export interface GeoQueryDocument {
 export declare class GeoFireQuery<T = any> {
     private app;
     private ref?;
-    constructor(app: FirebaseSDK, ref?: fb.default.firestore.CollectionReference | fb.default.firestore.Query | string);
+    constructor(app: FirebaseSDK, ref?: firebase.firestore.CollectionReference | firebase.firestore.Query | string);
     /**
      * Queries the Firestore collection based on geograpic radius
      * @param  {FirePoint} center the starting point for the query, i.e gfx.point(lat, lng)
