@@ -6,7 +6,7 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var rxjs = require('rxjs');
 var operators = require('rxjs/operators');
-var fb = require('firebase/app');
+var fb = require('firebase/compat/app');
 var fb__default = _interopDefault(fb);
 
 /**

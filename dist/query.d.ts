@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import * as fb from 'firebase/app';
+import * as fb from 'firebase/compat/app';
 import { FirebaseSDK } from './interfaces';
 import { FirePoint } from './client';
 export declare type QueryFn = (ref: fb.default.firestore.CollectionReference) => fb.default.firestore.Query;

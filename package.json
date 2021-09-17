@@ -72,6 +72,5 @@
   "homepage": "https://github.com/codediodeio/geofirex#readme",
   "directories": {
     "example": "example"
-  },
-  "dependencies": {}
+  }
 }

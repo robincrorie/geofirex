@@ -1,6 +1,6 @@
 import { Subject, Observable, combineLatest } from 'rxjs';
 import { map, takeUntil, shareReplay, finalize, first } from 'rxjs/operators';
-import fb__default from 'firebase/app';
+import fb__default from 'firebase/compat/app';
 
 /**
  * @module helpers

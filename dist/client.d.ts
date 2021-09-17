@@ -1,6 +1,6 @@
 import { FirebaseSDK } from './interfaces';
 import { GeoFireQuery } from './query';
-import * as fb from 'firebase/app';
+import * as fb from 'firebase/compat/app';
 export interface FirePoint {
     geopoint: fb.default.firestore.GeoPoint;
     geohash: string;
