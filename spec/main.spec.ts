@@ -1,4 +1,4 @@
-import * as firebase from 'firebase/app';
+import * as firebase from 'firebase/compat/app';
 import 'firebase/firestore';
 
 import { config, mockResponse } from './util';
